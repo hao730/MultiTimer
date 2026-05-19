@@ -111,6 +111,14 @@ public class MainPresenter : IDisposable
         SettingsService.Save(settings);
     }
 
+    /// <summary>
+    /// 處理 WM_HOTKEY 訊息，由 Form 的 WndProc 呼叫。
+    /// </summary>
+    public bool ProcessHotkeyMessage(Message m)
+    {
+        return _globalHotkey?.ProcessMessage(m) ?? false;
+    }
+
     public void Dispose()
     {
         foreach (var tp in _timerPresenters)

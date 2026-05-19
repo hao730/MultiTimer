@@ -41,9 +41,9 @@ public partial class Form1 : Form, IMainView
         InitializeComponent();
 
         Text = "多功能計時器";
-        Width = 840;
+        Width = 845;
         Height = 160;
-        MinimumSize = new Size(840, 160);
+        MinimumSize = new Size(845, 160);
         StartPosition = FormStartPosition.CenterScreen;
 
         // 工具列
@@ -91,11 +91,10 @@ public partial class Form1 : Form, IMainView
 
     protected override void WndProc(ref Message m)
     {
-        // 讓 GlobalHotkey 透過 Presenter 處理（直接用靜態方式不太好，
-        // 但 WndProc 必須在 Form 層級處理）
         if (m.Msg == GlobalHotkey.WM_HOTKEY)
         {
-            // Presenter 內部的 GlobalHotkey 會處理
+            if (_presenter?.ProcessHotkeyMessage(m) == true)
+                return;
         }
         base.WndProc(ref m);
     }

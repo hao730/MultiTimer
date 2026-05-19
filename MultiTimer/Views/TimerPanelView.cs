@@ -98,11 +98,11 @@ public class TimerPanelView : Panel, ITimerView
         _nudHours = new NumericUpDown { Width = 50, Minimum = 0, Maximum = 99, Location = new Point(x, y) };
         var lblH = new Label { Text = "時", AutoSize = true, Location = new Point(x + 54, y + 3), BackColor = Color.Transparent };
 
-        x = 236;
+        x = 235;
         _nudMinutes = new NumericUpDown { Width = 50, Minimum = 0, Maximum = 59, Location = new Point(x, y) };
         var lblM = new Label { Text = "分", AutoSize = true, Location = new Point(x + 54, y + 3), BackColor = Color.Transparent };
 
-        x = 317;
+        x = 315;
         _nudSeconds = new NumericUpDown { Width = 50, Minimum = 0, Maximum = 59, Location = new Point(x, y) };
         var lblS = new Label { Text = "秒", AutoSize = true, Location = new Point(x + 54, y + 3), BackColor = Color.Transparent };
 
