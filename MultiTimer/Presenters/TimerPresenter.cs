@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using MultiTimer.Models;
 using MultiTimer.Views;
@@ -10,6 +11,12 @@ namespace MultiTimer.Presenters;
 /// </summary>
 public class TimerPresenter : IDisposable
 {
+    [DllImport("user32.dll")]
+    private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
+
+    private const uint KEYEVENTF_KEYDOWN = 0x0000;
+    private const uint KEYEVENTF_KEYUP = 0x0002;
+
     private readonly TimerModel _model;
     private readonly ITimerView _view;
     private readonly System.Windows.Forms.Timer _ticker;
@@ -40,6 +47,7 @@ public class TimerPresenter : IDisposable
             _view.Seconds = _model.Seconds;
             if (_model.Hotkey != Keys.None)
                 _view.SetHotkey(_model.Hotkey);
+            _view.AutoKeyEnabled = _model.AutoKeyEnabled;
         }
 
         _ticker = new System.Windows.Forms.Timer { Interval = 1000 };
@@ -59,23 +67,16 @@ public class TimerPresenter : IDisposable
         };
     }
 
-    /// <summary>由全域熱鍵觸發：重新開始計時</summary>
-    public void RestartFromHotkey()
-    {
-        OnResetClicked();
-        OnStartClicked();
-    }
-
     /// <summary>取得目前資料用於儲存</summary>
     public TimerData GetData()
     {
-        // 同步 View 上的值到 Model
         _model.Name = _view.TimerName;
         _model.Mode = _view.ModeIndex == 1 ? TimerMode.Countdown : TimerMode.CountUp;
         _model.Hours = _view.Hours;
         _model.Minutes = _view.Minutes;
         _model.Seconds = _view.Seconds;
         _model.Hotkey = _view.HotkeyValue;
+        _model.AutoKeyEnabled = _view.AutoKeyEnabled;
         return _model.ToData();
     }
 
@@ -96,8 +97,6 @@ public class TimerPresenter : IDisposable
                 _ticker.Start();
                 _view.SetStartButtonText("暫停");
                 _view.SetSettingsEnabled(false);
-
-                // 倒數模式開始時立即顯示目標時間
                 _view.UpdateTimeDisplay(_model.Elapsed.ToString(@"hh\:mm\:ss"));
             }
             else if (_model.Mode == TimerMode.Countdown)
@@ -133,6 +132,32 @@ public class TimerPresenter : IDisposable
         _view.SetStartButtonText("開始");
         _view.SetSettingsEnabled(true);
         SoundService.PlayAlarm();
+
+        // 自動按下快捷鍵
+        if (_view.AutoKeyEnabled && _view.HotkeyValue != Keys.None)
+        {
+            SimulateKeyPress(_view.HotkeyValue);
+        }
+    }
+
+    private void SimulateKeyPress(Keys key)
+    {
+        // 拆分修飾鍵與主鍵
+        bool ctrl = key.HasFlag(Keys.Control);
+        bool alt = key.HasFlag(Keys.Alt);
+        bool shift = key.HasFlag(Keys.Shift);
+        byte vk = (byte)(key & Keys.KeyCode);
+
+        if (ctrl) keybd_event(0x11, 0, KEYEVENTF_KEYDOWN, UIntPtr.Zero);
+        if (alt) keybd_event(0x12, 0, KEYEVENTF_KEYDOWN, UIntPtr.Zero);
+        if (shift) keybd_event(0x10, 0, KEYEVENTF_KEYDOWN, UIntPtr.Zero);
+
+        keybd_event(vk, 0, KEYEVENTF_KEYDOWN, UIntPtr.Zero);
+        keybd_event(vk, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+
+        if (shift) keybd_event(0x10, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+        if (alt) keybd_event(0x12, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+        if (ctrl) keybd_event(0x11, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
     }
 
     private void SyncViewToModel()

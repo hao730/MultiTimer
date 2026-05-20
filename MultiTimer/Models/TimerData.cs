@@ -11,6 +11,7 @@ public class TimerData
     public int Minutes { get; set; } = 0;
     public int Seconds { get; set; } = 0;
     public string HotkeyText { get; set; } = "";
+    public bool AutoKeyEnabled { get; set; } = false;
 }
 
 public class AppSettings

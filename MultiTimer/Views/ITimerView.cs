@@ -19,6 +19,8 @@ public interface ITimerView
     void SetStartButtonText(string text);
     void SetSettingsEnabled(bool enabled);
 
+    bool AutoKeyEnabled { get; set; }
+
     event EventHandler StartClicked;
     event EventHandler ResetClicked;
     event EventHandler RemoveClicked;

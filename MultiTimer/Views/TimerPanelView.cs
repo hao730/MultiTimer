@@ -5,7 +5,7 @@ using System.Windows.Forms;
 namespace MultiTimer.Views;
 
 /// <summary>
-/// 單一計時器面板的 View 實作。只負責 UI 呈現與事件轉發。
+/// 單一計時器面板的 View 實作，以單行表格列呈現。
 /// </summary>
 public class TimerPanelView : Panel, ITimerView
 {
@@ -19,6 +19,7 @@ public class TimerPanelView : Panel, ITimerView
     private readonly Button _btnStart;
     private readonly Button _btnReset;
     private readonly Button _btnRemove;
+    private readonly CheckBox _chkAutoKey;
 
     public event EventHandler? StartClicked;
     public event EventHandler? ResetClicked;
@@ -72,76 +73,95 @@ public class TimerPanelView : Panel, ITimerView
         _nudSeconds.Enabled = enabled;
     }
 
+    public bool AutoKeyEnabled
+    {
+        get => _chkAutoKey.Checked;
+        set => _chkAutoKey.Checked = value;
+    }
+
     public TimerPanelView()
     {
-        BorderStyle = BorderStyle.FixedSingle;
-        Height = 60;
+        Height = 34;
         Dock = DockStyle.Top;
-        Padding = new Padding(4, 4, 4, 4);
-        Margin = new Padding(0, 0, 0, 6);
+        Margin = new Padding(0, 0, 0, 1);
+        BackColor = SystemColors.Window;
 
-        int y = 18;
+        int y = 5;
+        int x = 4;
 
-        _txtName = new TextBox { Width = 80, Text = "計時器", Location = new Point(6, y) };
+        // 名稱
+        _txtName = new TextBox { Width = 90, Text = "計時器", Location = new Point(x, y), BorderStyle = BorderStyle.FixedSingle };
+        x += 96;
 
+        // 模式
         _cboMode = new ComboBox
         {
             DropDownStyle = ComboBoxStyle.DropDownList,
-            Width = 58,
-            Location = new Point(90, y)
+            Width = 62,
+            Location = new Point(x, y)
         };
         _cboMode.Items.AddRange(new object[] { "正數", "倒數" });
         _cboMode.SelectedIndex = 0;
         _cboMode.SelectedIndexChanged += (_, _) => ModeChanged?.Invoke(this, EventArgs.Empty);
+        x += 68;
 
-        int x = 155;
-        _nudHours = new NumericUpDown { Width = 50, Minimum = 0, Maximum = 99, Location = new Point(x, y) };
-        var lblH = new Label { Text = "時", AutoSize = true, Location = new Point(x + 54, y + 3), BackColor = Color.Transparent };
+        // 時
+        _nudHours = new NumericUpDown { Width = 52, Minimum = 0, Maximum = 99, Location = new Point(x, y) };
+        x += 58;
 
-        x = 235;
-        _nudMinutes = new NumericUpDown { Width = 50, Minimum = 0, Maximum = 59, Location = new Point(x, y) };
-        var lblM = new Label { Text = "分", AutoSize = true, Location = new Point(x + 54, y + 3), BackColor = Color.Transparent };
+        // 分
+        _nudMinutes = new NumericUpDown { Width = 52, Minimum = 0, Maximum = 59, Location = new Point(x, y) };
+        x += 58;
 
-        x = 315;
-        _nudSeconds = new NumericUpDown { Width = 50, Minimum = 0, Maximum = 59, Location = new Point(x, y) };
-        var lblS = new Label { Text = "秒", AutoSize = true, Location = new Point(x + 54, y + 3), BackColor = Color.Transparent };
+        // 秒
+        _nudSeconds = new NumericUpDown { Width = 52, Minimum = 0, Maximum = 59, Location = new Point(x, y) };
+        x += 58;
 
-        var lblHk = new Label { Text = "快捷鍵:", AutoSize = true, Location = new Point(395, y + 3), BackColor = Color.Transparent };
-        _txtHotkey = new HotkeyTextBox { Width = 100, Location = new Point(450, y) };
+        // 快捷鍵
+        _txtHotkey = new HotkeyTextBox { Width = 100, Location = new Point(x, y) };
         _txtHotkey.HotkeyChanged += (_, _) => HotkeyChanged?.Invoke(this, EventArgs.Empty);
+        x += 106;
 
+        // 自動按鍵
+        _chkAutoKey = new CheckBox { AutoSize = false, Width = 20, Height = 20, Location = new Point(x + 14, y + 2) };
+        x += 48;
+
+        // 經過時間
         _lblTime = new Label
         {
             Text = "00:00:00",
-            Font = new Font("Consolas", 14, FontStyle.Bold),
-            AutoSize = true,
-            Location = new Point(565, y - 3)
+            Font = new Font("Consolas", 12, FontStyle.Bold),
+            AutoSize = false,
+            Width = 100,
+            Height = 24,
+            TextAlign = ContentAlignment.MiddleCenter,
+            Location = new Point(x, y - 1)
         };
+        x += 106;
 
-        _btnStart = new Button { Text = "開始", Width = 50, Location = new Point(675, y - 2) };
+        // 開始
+        _btnStart = new Button { Text = "開始", Width = 52, Height = 26, Location = new Point(x, y - 1), TabStop = false };
         _btnStart.Click += (_, _) => StartClicked?.Invoke(this, EventArgs.Empty);
+        _btnStart.GotFocus += (_, _) => Parent?.Focus();
+        x += 56;
 
-        _btnReset = new Button { Text = "重置", Width = 50, Location = new Point(730, y - 2) };
+        // 重置
+        _btnReset = new Button { Text = "重置", Width = 52, Height = 26, Location = new Point(x, y - 1), TabStop = false };
         _btnReset.Click += (_, _) => ResetClicked?.Invoke(this, EventArgs.Empty);
+        _btnReset.GotFocus += (_, _) => Parent?.Focus();
+        x += 56;
 
-        _btnRemove = new Button { Text = "✕", Width = 28, Location = new Point(785, y - 2), ForeColor = Color.Red };
+        // 刪除
+        _btnRemove = new Button { Text = "✕", Width = 30, Height = 26, Location = new Point(x, y - 1), ForeColor = Color.Red, TabStop = false };
         _btnRemove.Click += (_, _) => RemoveClicked?.Invoke(this, EventArgs.Empty);
+        _btnRemove.GotFocus += (_, _) => Parent?.Focus();
 
         Controls.AddRange(new Control[]
         {
             _txtName, _cboMode,
             _nudHours, _nudMinutes, _nudSeconds,
-            _txtHotkey,
+            _txtHotkey, _chkAutoKey,
             _lblTime, _btnStart, _btnReset, _btnRemove
         });
-
-        Controls.Add(lblH);
-        Controls.Add(lblM);
-        Controls.Add(lblS);
-        Controls.Add(lblHk);
-        lblH.BringToFront();
-        lblM.BringToFront();
-        lblS.BringToFront();
-        lblHk.BringToFront();
     }
 }

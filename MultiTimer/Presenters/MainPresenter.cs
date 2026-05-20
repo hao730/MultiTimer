@@ -29,11 +29,7 @@ public class MainPresenter : IDisposable
     public void InitializeHotkeys()
     {
         _globalHotkey = new GlobalHotkey(_view.ViewHandle);
-
-        foreach (var tp in _timerPresenters)
-        {
-            RegisterHotkey(tp);
-        }
+        // 不再註冊全域熱鍵，快捷鍵僅用於時間到時自動模擬按下
     }
 
     private void AddTimer(TimerData? data = null)
@@ -52,8 +48,7 @@ public class MainPresenter : IDisposable
 
         presenter.HotkeyChanged += (_, _) =>
         {
-            UnregisterHotkey(presenter);
-            RegisterHotkey(presenter);
+            // 快捷鍵僅記錄，不註冊全域熱鍵
         };
 
         _timerPresenters.Add(presenter);
@@ -62,19 +57,12 @@ public class MainPresenter : IDisposable
 
     private void RegisterHotkey(TimerPresenter tp)
     {
-        if (_globalHotkey == null) return;
-        var key = tp.Model.Hotkey;
-        if (key == Keys.None) return;
-
-        int id = _globalHotkey.Register(key, () => tp.RestartFromHotkey());
-        tp.HotkeyId = id;
+        // 不再使用全域熱鍵註冊
     }
 
     private void UnregisterHotkey(TimerPresenter tp)
     {
-        if (_globalHotkey == null || tp.HotkeyId <= 0) return;
-        _globalHotkey.Unregister(tp.HotkeyId);
-        tp.HotkeyId = -1;
+        // 不再使用全域熱鍵註冊
     }
 
     private void LoadSettings()

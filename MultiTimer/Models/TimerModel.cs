@@ -14,6 +14,7 @@ public class TimerModel
     public int Minutes { get; set; }
     public int Seconds { get; set; }
     public Keys Hotkey { get; set; } = Keys.None;
+    public bool AutoKeyEnabled { get; set; } = false;
 
     public TimeSpan Elapsed { get; private set; }
     public TimeSpan Target { get; private set; }
@@ -102,6 +103,8 @@ public class TimerModel
             Hotkey = (Keys)keyVal;
         else
             Hotkey = Keys.None;
+
+        AutoKeyEnabled = data.AutoKeyEnabled;
     }
 
     /// <summary>匯出為可序列化資料</summary>
@@ -114,7 +117,8 @@ public class TimerModel
             Hours = Hours,
             Minutes = Minutes,
             Seconds = Seconds,
-            HotkeyText = ((int)Hotkey).ToString()
+            HotkeyText = ((int)Hotkey).ToString(),
+            AutoKeyEnabled = AutoKeyEnabled
         };
     }
 }
