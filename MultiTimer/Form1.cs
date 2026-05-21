@@ -43,9 +43,9 @@ public partial class Form1 : Form, IMainView
         InitializeComponent();
 
         Text = "多功能計時器";
-        Width = 876;
+        Width = 770;
         Height = 160;
-        MinimumSize = new Size(876, 160);
+        MinimumSize = new Size(770, 160);
         StartPosition = FormStartPosition.CenterScreen;
 
         // 工具列
